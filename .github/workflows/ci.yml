@@ -11,3 +11,5 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - name: Check the app bundles for Android
+        run: npx expo export --platform android --output-dir /tmp/bundle-check
