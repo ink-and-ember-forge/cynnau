@@ -3,7 +3,7 @@
     "name": "Cynnau",
     "slug": "cynnau",
     "scheme": "cynnau",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -17,6 +17,15 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-notifications",
+      "expo-document-picker"
+    ],
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/favicon.png"
     }
   }
 }
