@@ -58,6 +58,15 @@ export interface Completion {
   time: TimeBucket;
   dread: Dread;
   stubbornDays: number; // capped days the task had rolled over
+  via?: 'hearth' | 'list'; // done from a Right Now pick, or from a list
+}
+
+/** Private usage log: stays on the phone, only feeds the Insights screen. */
+export interface UsageEvent {
+  at: string;
+  type: 'open' | 'postpone';
+  source?: 'nudge'; // the open came from tapping the evening nudge
+  ref?: string;
 }
 
 /** A real-life reward, defined once. Its tier sets both price and rarity. */
@@ -86,6 +95,8 @@ export interface Settings {
   nudgeHour: number; // 24h, local
   lastMinutes: number;
   lastEnergy: Energy;
+  backupDirUri: string | null; // folder chosen for automatic backups
+  backupLastAt: string | null;
 }
 
 export interface AppData {
@@ -97,12 +108,13 @@ export interface AppData {
   completions: Completion[];
   rewards: Reward[];
   loot: LootItem[];
+  events: UsageEvent[];
   settings: Settings;
 }
 
 export const newId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
-export const defaultSettings = (): Settings => ({ nudgeEnabled: false, nudgeHour: 19, lastMinutes: 30, lastEnergy: 'ok' });
+export const defaultSettings = (): Settings => ({ nudgeEnabled: false, nudgeHour: 19, lastMinutes: 30, lastEnergy: 'ok', backupDirUri: null, backupLastAt: null });
 
 export const seedSkills = (now = new Date()): Skill[] =>
   [
@@ -122,5 +134,6 @@ export const emptyData = (): AppData => ({
   completions: [],
   rewards: [],
   loot: [],
+  events: [],
   settings: defaultSettings(),
 });

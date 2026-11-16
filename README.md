@@ -31,7 +31,11 @@ npm test
 | 🛡️ Character | Level and identity title, five observed stats, skill levels. |
 | 🎁 Loot | Sparks balance, your stash of won or bought rewards, and the shop of real-life rewards. |
 
-Settings (the cog) holds the evening nudge, export and restore, and a plain-English summary of the rules.
+Settings (the cog) holds the evening nudge, backups, and a plain-English summary of the rules.
+
+**Insights** (from Settings or the Character tab) reads a private usage log to answer three questions: is the cue working (days opened, visits, visits that led to action, time of day), are the Right Now picks any good (picks done vs "Not now", vs things done from the lists), and is the pile growing. The log never leaves the phone except inside your own backups.
+
+**Automatic backup** (Android): choose a folder once, for example one in Google Drive, and the app writes a dated backup there whenever you leave it after a change. It keeps one file per day for the last 7 days. Manual export and restore remain.
 
 ## Rules as built (all starting values, meant to be tuned)
 
@@ -43,6 +47,7 @@ These settle the brief's open questions for now. Each lives in one small file un
 - **Streaks** `streaks.ts`: one missed day (or week) is forgiven and flagged "at risk"; each further consecutive miss halves the streak rather than resetting it. The day turns over at 4am.
 - **Stats** `stats.ts`: Courage (dread faced), Stamina (long tasks), Tempo (quick wins), Constancy (habits tended), Grit (stubborn quests finished). Never set by hand.
 - **Loot** `loot.ts`: sparks are a tenth of fuel. Rewards have a size only: small 30, medium 100, big 300 sparks. Drops happen on 6–15% of completions (dread, stubbornness and a 7+ streak nudge the odds); with no fitting reward the drop is a pouch of sparks.
+- **Insights** `insights.ts`: a visit is an open more than five minutes after the last; it "led to action" if something was completed within 15 minutes.
 - **Nudge** `notifications.ts`: one optional daily notification at 18:00–21:00. Nothing else notifies.
 
 ## Layout
@@ -54,6 +59,6 @@ These settle the brief's open questions for now. Each lives in one small file un
 
 ## Not built yet
 
-- Cloud backup or desktop sync (data is phone-only; export is manual).
+- Desktop sync. Backups are files in a folder you choose, not a live sync.
 - Scheduled or dated quests, reminders per habit, and editing past completions.
 - Tuning from real use: every number above is a first guess.

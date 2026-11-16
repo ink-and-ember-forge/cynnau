@@ -5,6 +5,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import { habitDue, habitStreak } from './src/domain/streaks';
 import { AppProvider, useApp, type Tab } from './src/state/AppState';
 import { BuildSheet, HabitSheet, RewardSheet, SettingsSheet, SkillSheet, TaskSheet } from './src/ui/Forms';
+import { InsightsSheet } from './src/ui/Insights';
 import { RewardToast } from './src/ui/RewardToast';
 import { Builds } from './src/ui/screens/Builds';
 import { Character } from './src/ui/screens/Character';
@@ -76,6 +77,7 @@ function Shell() {
       {sheet?.type === 'skill' && <SkillSheet id={sheet.id} />}
       {sheet?.type === 'reward' && <RewardSheet />}
       {sheet?.type === 'settings' && <SettingsSheet />}
+      {sheet?.type === 'insights' && <InsightsSheet />}
     </KeyboardAvoidingView>
   );
 }
