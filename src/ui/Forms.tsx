@@ -5,7 +5,7 @@ import { PRICE, TIER_ICON, TIER_LABEL } from '../domain/loot';
 import type { Dread, Rhythm, Tier, TimeBucket } from '../domain/types';
 import { syncNudge } from '../notifications';
 import { useApp } from '../state/AppState';
-import { exportData, importData } from '../storage/store';
+import { autoBackupSupported, backupFolderName, exportData, importData, pickBackupFolder } from '../storage/store';
 import { Chips } from './Chips';
 import { Btn, ConfirmBtn, Field, Label, Note, Sheet } from './kit';
 import { emptyData } from '../domain/types';
@@ -232,8 +232,16 @@ export function RewardSheet() {
 const HOURS = [18, 19, 20, 21];
 
 export function SettingsSheet() {
-  const { data, act, close, say, replaceAll } = useApp();
-  const { nudgeEnabled, nudgeHour } = data.settings;
+  const { data, act, close, open, say, replaceAll, backupNow } = useApp();
+  const { nudgeEnabled, nudgeHour, backupDirUri, backupLastAt } = data.settings;
+
+  const chooseFolder = async () => {
+    const picked = await pickBackupFolder();
+    if (!picked) return;
+    act((d) => A.updateSettings(d, { backupDirUri: picked.uri }));
+    const err = backupNow();
+    say(err ? `Could not write to that folder: ${err}` : `Backing up to ${picked.name}.`);
+  };
 
   const setNudge = async (enabled: boolean, hour: number) => {
     try {
@@ -249,7 +257,8 @@ export function SettingsSheet() {
     try {
       const d = await importData();
       if (!d) return;
-      replaceAll(d);
+      // The backup folder belongs to this phone, not to the file being restored.
+      replaceAll(A.updateSettings(d, { backupDirUri, backupLastAt }));
       await syncNudge(d.settings.nudgeEnabled, d.settings.nudgeHour).catch(() => {});
       say('Backup restored.');
       close();
@@ -272,15 +281,43 @@ export function SettingsSheet() {
       {nudgeEnabled && <Chips value={nudgeHour} onChange={(h) => setNudge(true, h)} options={HOURS.map((h) => ({ label: `${h}:00`, value: h }))} />}
       <Note>One gentle prompt a day at most. Nothing else in Cynnau ever notifies you.</Note>
 
-      <Label>Your data</Label>
-      <Note>Everything lives on this phone. Export a backup now and then so a lost phone does not take your streaks with it.</Note>
-      <Btn kind="outline" label="Export backup" onPress={() => exportData(data).catch(() => say('Export failed.'))} />
+      <Btn kind="quiet" label="📈 Insights: is it working?" onPress={() => open({ type: 'insights' })} />
+
+      <Label>Automatic backup</Label>
+      {!autoBackupSupported ? (
+        <Note>Automatic backup works in the Android app. Here, use Export below.</Note>
+      ) : backupDirUri ? (
+        <>
+          <Note>
+            Saving to "{backupFolderName(backupDirUri)}" whenever you leave the app, one file a day for the last 7 days.{' '}
+            {backupLastAt ? `Last backup: ${new Date(backupLastAt).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}.` : 'No backup written yet.'}
+          </Note>
+          <Btn
+            kind="outline"
+            label="Back up now"
+            onPress={() => {
+              const err = backupNow();
+              say(err ? `Backup failed: ${err}` : 'Backed up.');
+            }}
+          />
+          <Btn kind="quiet" label="Change folder" onPress={chooseFolder} />
+          <ConfirmBtn label="Turn off automatic backup" confirm="Tap again to turn it off" onConfirm={() => act((d) => A.updateSettings(d, { backupDirUri: null }))} />
+        </>
+      ) : (
+        <>
+          <Note>Pick a folder once and Cynnau keeps a dated backup there every time you leave the app. Choose a Google Drive folder to keep it safe off the phone too.</Note>
+          <Btn kind="outline" label="Choose backup folder" onPress={chooseFolder} />
+        </>
+      )}
+
+      <Label>Manual backup</Label>
+      <Btn kind="quiet" label="Export a copy" onPress={() => exportData(data).catch(() => say('Export failed.'))} />
       <Btn kind="quiet" label="Restore from backup" onPress={doImport} />
       <ConfirmBtn
         label="Erase everything"
         confirm="Tap again to erase all data"
         onConfirm={() => {
-          replaceAll(emptyData());
+          replaceAll(A.updateSettings(emptyData(), { backupDirUri: null, backupLastAt: null }));
           syncNudge(false, 19).catch(() => {});
           say('Everything erased.');
           close();

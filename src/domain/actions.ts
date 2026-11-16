@@ -2,7 +2,7 @@ import { addDays, dayKey } from './dates';
 import { PRICE, dropChance, rollDrop } from './loot';
 import { characterLevel, skillLevel, sparks, stubbornDays, taskSkillId } from './select';
 import { habitStreak } from './streaks';
-import type { AppData, Completion, Dread, Habit, LootItem, Project, Reward, Rhythm, Settings, Skill, Task, Tier, TimeBucket } from './types';
+import type { AppData, Completion, UsageEvent, Dread, Habit, LootItem, Project, Reward, Rhythm, Settings, Skill, Task, Tier, TimeBucket } from './types';
 import { newId } from './types';
 import { sparksFor, titleFor, xpFor } from './xp';
 
@@ -84,7 +84,26 @@ export function completeTask(data: AppData, id: string, now = new Date(), rng: R
 /** "Not now": hides the quest until tomorrow and counts the postponement. */
 export const postponeTask = (data: AppData, id: string, now = new Date()): AppData => ({
   ...data,
+  events: pushEvent(data.events, { at: now.toISOString(), type: 'postpone', ref: id }),
   tasks: data.tasks.map((t) => (t.id === id ? { ...t, postponed: t.postponed + 1, snoozedUntil: addDays(dayKey(now), 1) } : t)),
+});
+
+// ── Usage log ─────────────────────────────────────────────────────────────
+const MAX_EVENTS = 5000;
+const SESSION_GAP_MS = 5 * 60_000;
+const pushEvent = (events: UsageEvent[], e: UsageEvent) => [...events, e].slice(-MAX_EVENTS);
+
+/** Records an app open. Returning within five minutes counts as the same visit. */
+export function logOpen(data: AppData, now = new Date(), source?: 'nudge'): AppData | null {
+  const last = [...data.events].reverse().find((e) => e.type === 'open');
+  if (last && now.getTime() - Date.parse(last.at) < SESSION_GAP_MS) return null;
+  return { ...data, events: pushEvent(data.events, { at: now.toISOString(), type: 'open', ...(source ? { source } : {}) }) };
+}
+
+/** Tags the most recent completion with where it was done from. */
+export const tagLastCompletion = (data: AppData, via: 'hearth' | 'list'): AppData => ({
+  ...data,
+  completions: data.completions.map((c, i) => (i === data.completions.length - 1 ? { ...c, via } : c)),
 });
 
 // ── Builds ────────────────────────────────────────────────────────────────

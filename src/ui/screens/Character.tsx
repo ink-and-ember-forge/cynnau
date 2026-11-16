@@ -48,6 +48,8 @@ export function Character() {
         ))}
       </View>
 
+      <Btn kind="quiet" label="📈 Insights: is it working?" onPress={() => open({ type: 'insights' })} />
+
       <H>Stats</H>
       <Note>Observed from what you actually do. You never set these.</Note>
       <Card style={{ gap: 14 }}>

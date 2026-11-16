@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { addHabit, addProject, addReward, addTask, buyReward, completeTask, deleteProject, postponeTask, tendHabit } from './actions';
+import { addHabit, addProject, addReward, addTask, buyReward, completeTask, deleteProject, logOpen, postponeTask, tagLastCompletion, tendHabit } from './actions';
+import { insights } from './insights';
 import { addDays, dayKey, weekStart } from './dates';
 import { PRICE, dropChance, rollDrop } from './loot';
 import { migrate } from './migrate';
@@ -183,5 +184,29 @@ describe('migrate', () => {
     expect(migrate(JSON.parse(JSON.stringify(d)))).toEqual(d);
     expect(migrate({ hello: 1 })).toBeNull();
     expect(migrate(null)).toBeNull();
+  });
+});
+
+describe('usage log and insights', () => {
+  it('counts a quick return as the same visit', () => {
+    const d = logOpen(emptyData(), at(15, 9))!;
+    expect(logOpen(d, new Date(at(15, 9).getTime() + 60_000))).toBeNull();
+    expect(logOpen(d, at(15, 10))!.events).toHaveLength(2);
+  });
+  it('summarises opens, actions and picks over the window', () => {
+    let d = quest(quest(emptyData(), 'a', { when: at(14) }), 'b', { when: at(14) });
+    d = logOpen(d, at(14, 8), 'nudge')!; // opened, did nothing
+    d = logOpen(d, at(15, 18))!;
+    d = tagLastCompletion(completeTask(d, idOf(d, 'a'), new Date(at(15, 18).getTime() + 120_000), never)!.data, 'hearth');
+    d = postponeTask(d, idOf(d, 'b'), at(15, 18));
+    const i = insights(d, at(15, 20), 7);
+    expect(i).toMatchObject({ opens: 2, activeDays: 2, trackedDays: 2, opensWithAction: 1, nudgeOpens: 1, hearthDone: 1, listDone: 0, postponed: 1, captured: 2, questsDone: 1, fuel: 10 });
+    expect(i.byPart).toEqual({ morning: 1, afternoon: 0, evening: 1, night: 0 });
+    expect(i.days).toHaveLength(7);
+    expect(i.days[6]).toMatchObject({ key: '2026-11-15', opens: 1, done: 1 });
+  });
+  it('ignores activity outside the window', () => {
+    const d = logOpen(emptyData(), at(1, 9))!;
+    expect(insights(d, at(15), 7)).toMatchObject({ opens: 0, trackedDays: 7 });
   });
 });

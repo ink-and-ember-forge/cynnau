@@ -50,6 +50,7 @@ export function migrate(raw: unknown): AppData | null {
       completions: arr(r.completions),
       rewards: arr(r.rewards),
       loot: arr(r.loot),
+      events: arr(r.events),
       settings: { ...defaultSettings(), ...((r.settings as object) ?? {}) },
     };
   }

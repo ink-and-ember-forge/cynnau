@@ -21,7 +21,7 @@ export function Builds() {
     const stubborn = stubbornDays(t, now);
     return (
       <View style={s.row}>
-        <Pressable onPress={() => finish((d) => A.completeTask(d, t.id))} hitSlop={6} accessibilityRole="button" accessibilityLabel={`Complete ${t.title}`} style={s.check} />
+        <Pressable onPress={() => finish((d) => A.completeTask(d, t.id), 'list')} hitSlop={6} accessibilityRole="button" accessibilityLabel={`Complete ${t.title}`} style={s.check} />
         <Pressable onPress={() => open({ type: 'task', id: t.id })} style={{ flex: 1 }} accessibilityRole="button" accessibilityLabel={`Edit ${t.title}`}>
           <Text style={s.rowTitle}>{t.title}</Text>
           <Text style={s.meta}>

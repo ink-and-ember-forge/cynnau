@@ -58,7 +58,7 @@ export function Habits() {
           kind={info.doneToday ? 'quiet' : 'moss'}
           label={info.doneToday ? 'Tended today ✓' : rested ? 'Tend again (week already kept)' : 'Tended'}
           disabled={info.doneToday}
-          onPress={() => finish((d) => A.tendHabit(d, h.id))}
+          onPress={() => finish((d) => A.tendHabit(d, h.id), 'list')}
         />
       </Card>
     );

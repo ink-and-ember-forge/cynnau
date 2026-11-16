@@ -111,7 +111,7 @@ export function Hearth() {
             {streak.streak > 0 ? ` · 🔥 ${streak.streak}` : ''}
             {skill ? ` · ${skill.icon} ${skill.name}` : ''}
           </Text>
-          <Btn kind="moss" label="Tended" onPress={() => finish((d) => A.tendHabit(d, habit.id))} />
+          <Btn kind="moss" label="Tended" onPress={() => finish((d) => A.tendHabit(d, habit.id), 'hearth')} />
         </Card>
       );
     }
@@ -133,7 +133,7 @@ export function Hearth() {
           {stubborn > 0 ? ` · stubborn +${stubborn * 5}%` : ''}
         </Text>
         <View style={s.actions}>
-          <Btn label="Done" onPress={() => finish((d) => A.completeTask(d, task.id))} style={{ flex: 2 }} />
+          <Btn label="Done" onPress={() => finish((d) => A.completeTask(d, task.id), 'hearth')} style={{ flex: 2 }} />
           <Btn kind="quiet" label="Not now" onPress={() => act((d) => A.postponeTask(d, task.id))} style={{ flex: 1 }} />
         </View>
       </Card>

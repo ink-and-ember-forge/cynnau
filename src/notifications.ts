@@ -27,3 +27,17 @@ export async function syncNudge(enabled: boolean, hour: number): Promise<boolean
   });
   return true;
 }
+
+/** True once if the app was just opened by tapping the evening nudge. */
+export function consumeNudgeTap(): boolean {
+  if (Platform.OS === 'web') return false;
+  try {
+    const N = lib();
+    const last = N.getLastNotificationResponse();
+    if (!last) return false;
+    N.clearLastNotificationResponse();
+    return last.notification.request.identifier === ID;
+  } catch {
+    return false;
+  }
+}
